@@ -11,67 +11,63 @@
     - localhost/apagarlivro/id (delete) >> deletar livros
 04 - Quais recursos - Livros'''
 
-from flask import Flask, jsonify, request
 # flask - servidor
 # jsonify - retornar no formato Json
 # request - permite acessar os dados
+from flask import Flask, jsonify, request
 
-API = Flask(__name__)
+app = Flask(__name__)
 
-livros = [
+books = [
     {
         "id": 1,
-        "titulo": "O Senhor dos Anéis",
-        "autor": "J.R.R Tolkien"
+        "title": "O Senhor dos Anéis",
+        "author": "J.R.R Tolkien"
     },
     {
         "id": 2,
-        "titulo": "Harry Potter",
-        "autor": "J.K Howling"
+        "title": "Harry Potter",
+        "author": "J.K Rowling"
     },
     {
         "id": 3,
-        "titulo": "Hábitos Atômicos",
-        "autor": "James Clear"
+        "title": "Hábitos Atômicos",
+        "author": "James Clear"
     }
 ]
 
-# Consultar biblioteca
-@API.route('/livros', methods = ['GET'])
-def obter_livros():
-    return jsonify(livros)
+# Retorna todos os livros
+@app.route('/books', methods=['GET'])
+def get_all_books():
+    return jsonify(books)
 
-# Incluir novo livro
-@API.route('/adicionarlivro', methods = ['POST'])
-def incluir_livro():
-    # Retornar informação enviada pelo usuário
-    novo_livro = request.get_json()
-    livros.append(novo_livro)
-    return jsonify(livros)
+# Retorna um livro específico pelo ID
+@app.route('/books/<int:id>', methods=['GET'])
+def get_book_by_id(id):
+    book = next((book for book in books if book["id"] == id), None)
+    if book is not None:
+        return jsonify(book)
+    return jsonify({"message": "Book not found"}), 404
 
-# Consultar por ID
-@API.route('/livro/<int:id>', methods = ['GET'])
-def obter_livro_id(id):
-    for i in livros:
-        if i.get('id') == id:
-            return jsonify(i)
-        
-# Editar livro
-@API.route('/editarlivro/<int:id>', methods = ['PUT'])
-def editar_livro_id(id):
-    # Retornar informação enviada pelo usuário
-    edicao = request.get_json()
-    for indice, livro in enumerate(livros):
-        if livro.get('id') == id:
-            livros[indice].update(edicao)
-            return jsonify(livros[indice])
+# Adiciona um novo livro
+@app.route('/books', methods=['POST'])
+def add_book():
+    book = request.get_json()
+    if "id" not in book:
+        return jsonify({"message": "ID is required"}), 400
+    books.append(book)
+    return jsonify(books), 201
 
-# Excluir livro
-@API.route('/apagarlivro/<int:id>', methods = ['DELETE'])
-def apagar_livro_id(id):
-    for indice, livro in enumerate(livros):
-        if livro.get('id') == id:
-            del livros[indice]
-    return jsonify(livros)
+# Atualiza um livro existente
+@app.route('/books/<int:id>', methods=['PUT'])
+def update_book(id):
+    book = next(())
 
-API.run(port = 5000, host='localhost', debug=True)
+@app.route('/deletebook/<int:id>', methods = ['DELETE'])
+def delete_book_id(id):
+    for indice, book in enumerate(books):
+        if book.get('id') == id:
+            del books[indice]
+    return jsonify(books)
+
+@app.run(port = 5000, host='localhost', debug=True)
